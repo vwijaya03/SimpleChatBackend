@@ -29,29 +29,51 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client: Socket,
     data: { username: string; roomId: string },
   ) {
-    await this.chatService.joinRoom(client.id, data.username, data.roomId);
-    this.server.to(client.id).emit('joinRoomSuccess', {
-      success: true,
-      message: 'Successfully joined the room.',
-      data: {
-        username: data.username,
-        roomId: data.roomId,
-        id: client.id,
-      },
-    });
-    this.server.emit(
-      'updateUsers',
-      this.chatService.getUsersInRoom(data.roomId),
-    );
+    try {
+      await this.chatService.joinRoom(client.id, data.username, data.roomId);
+
+      this.server.to(client.id).emit('joinRoomSuccess', {
+        success: true,
+        message: 'Successfully joined the room.',
+        data: {
+          username: data.username,
+          roomId: data.roomId,
+          id: client.id,
+        },
+      });
+
+      this.server.emit(
+        'updateUsers',
+        this.chatService.getUsersInRoom(data.roomId),
+      );
+    } catch (error) {
+      this.server.to(client.id).emit('joinRoomError', {
+        success: false,
+        message: `Failed to join the room, ${error.message}`,
+      });
+    }
   }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     client: Socket,
-    data: { roomId: string; username: string; content: string },
+    data: { username: string; roomId: string; message: string },
   ) {
-    await this.chatService.addMessage(data.roomId, data.username, data.content);
-    const messages = await this.chatService.getMessagesInRoom(data.roomId);
-    this.server.to(data.roomId).emit('message', messages);
+    const { username, roomId, message } = data;
+
+    await this.chatService.addMessage(data.username, data.roomId, data.message);
+    // const messages = await this.chatService.getMessagesInRoom(data.roomId);
+    // this.server.socketsJoin(data.roomId);
+    client.join(data.roomId);
+    this.server.to(data.roomId).emit('message', { username, roomId, message });
+  }
+
+  @SubscribeMessage('exitRoom')
+  async handleExitRoom(
+    client: Socket,
+    data: { username: string; roomId: string },
+  ) {
+    const { username, roomId } = data;
+    await this.chatService.removeUserFromRoom(username, roomId);
   }
 }

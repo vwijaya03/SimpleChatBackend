@@ -63,10 +63,7 @@ export class ChatService {
     return userRoom && userRoom.length > 0 ? userRoom : [];
   }
 
-  async removeUser(username: string, roomId: string): Promise<void> {
-    await this.roomModel.updateOne(
-      { roomId },
-      { $pull: { users: { username } } },
-    );
+  async removeUserFromRoom(username: string, roomId: string): Promise<void> {
+    await this.userRoomModel.deleteOne({ username, room_id: roomId });
   }
 }
