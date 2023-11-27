@@ -54,7 +54,8 @@ export class ChatService {
   async getMessagesInRoom(roomId: string): Promise<Message[]> {
     const messages = await this.messageModel
       .find({ room_id: roomId })
-      .sort({ created_at: 'asc' });
+      .sort({ created_at: 'asc' })
+      .limit(25);
     return messages;
   }
 
