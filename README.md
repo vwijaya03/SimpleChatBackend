@@ -4,8 +4,7 @@
 $ docker pull mongo
 $ docker run -d -p 27017:27017 --name mongo mongo
 $ git clone https://github.com/vwijaya03/SimpleChatBackend.git
-$ npm install
-$ npm start
+$ cd SimpleChatBackend && npm install && npm start
 ```
 
 ## Running the app
