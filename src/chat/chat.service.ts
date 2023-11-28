@@ -15,7 +15,7 @@ export class ChatService {
   ) {}
 
   async joinRoom(
-    id: string,
+    client_id: string,
     username: string,
     room_id: string,
   ): Promise<{ username: string; room_id: string } | string> {
@@ -38,7 +38,7 @@ export class ChatService {
     }
 
     // Insert username & room_id in users_rooms
-    await this.userRoomModel.create({ username, room_id });
+    await this.userRoomModel.create({ username, room_id, client_id });
 
     return { username, room_id };
   }
@@ -54,7 +54,7 @@ export class ChatService {
   async getMessagesInRoom(roomId: string): Promise<Message[]> {
     const messages = await this.messageModel
       .find({ room_id: roomId })
-      .sort({ created_at: 'asc' })
+      .sort({ created_at: -1 })
       .limit(25);
     return messages;
   }
@@ -66,5 +66,9 @@ export class ChatService {
 
   async removeUserFromRoom(username: string, roomId: string): Promise<void> {
     await this.userRoomModel.deleteOne({ username, room_id: roomId });
+  }
+
+  async removeUserFromRoomByClientId(client_id: string): Promise<void> {
+    await this.userRoomModel.deleteOne({ client_id });
   }
 }

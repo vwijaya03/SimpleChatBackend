@@ -1,0 +1,13 @@
+version: '1'
+
+services:
+  simple-chat-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: simple-chat-backend
+    ports:
+      - 3500:3500
+    volumes:
+      - .:/src
+      - /src/node_modules

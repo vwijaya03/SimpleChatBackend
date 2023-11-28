@@ -20,6 +20,9 @@ export class UserRoom extends Document {
 
   @Prop({ required: true })
   room_id: string;
+
+  @Prop({ required: true })
+  client_id: string;
 }
 
 @Schema()

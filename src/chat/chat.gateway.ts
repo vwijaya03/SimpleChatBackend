@@ -17,11 +17,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
 
   handleConnection(client: Socket, ...args: any[]) {
+    client.setMaxListeners(10);
     console.log(`Client connected: ${client.id}`);
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+    await this.chatService.removeUserFromRoomByClientId(client.id);
   }
 
   @SubscribeMessage('joinRoom')
@@ -75,9 +77,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const messages = await this.chatService.getMessagesInRoom(roomId);
     // const messages = await this.chatService.getMessagesInRoom(data.roomId);
     // this.server.socketsJoin(data.roomId);
-    console.log('messages', messages.length);
-    console.log(messages);
-    console.log();
     client.join(roomId);
     this.server.to(roomId).emit('messagesHistory', { roomId, messages });
   }
